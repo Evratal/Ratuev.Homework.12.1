@@ -1,5 +1,8 @@
 import os, json
 from pathlib import Path
+
+from src.external_api import get_currency_rate
+
 """""""""""""""""
 Создаём необходимые для работы функции
 """""""""""""""""
@@ -10,7 +13,7 @@ path_to_json_file = os.path.join(Path(os.path.dirname(__file__)).parents[0], "da
 # потом заходим в папку "data" и берём необходимый файл "operations.json".
 
 """""""""
-Создаём функцию, которая в качестве аргумента путь к необходимому файлу "operations.json",преобразовывая json файл 
+1.Создаём функцию, которая в качестве аргумента путь к необходимому файлу "operations.json",преобразовывая json файл 
 и возвращая информацию в виде списка. Кроме того, обрабатывается возможность отсутствия файла по выданному пути или 
 возможности его повреждения(содержит не список или пуст) через обработки ошибки декодирования.
 """""""""
@@ -29,3 +32,25 @@ def take_info_about_transaction(path_of_json_file):
         return info_about_transaction
 info = take_info_about_transaction(path_to_json_file)
 print(info)
+
+
+"""""""""
+2. Создаем функцию, которая берёт в качестве аргумента id транзакции а на выходе сумму транзакции в рублях.
+Если транзакции выполнена в другой валюте, то через функцию в модуле external_api.
+"""""""""
+
+
+
+def information_about_amount_of_transaction():
+    client_id = int(input("Введите id для получения информации о сумме перевода:"))
+    info_transaction = take_info_about_transaction(path_to_json_file)
+    amount = 0
+    for transaction in info_transaction:
+        if transaction["id"] == client_id:
+            if transaction['operationAmount']['currency']['code'] == "RUB":
+                amount = transaction['operationAmount']['amount']
+            elif transaction['operationAmount']['currency']['code'] == "USD":
+                amount = get_currency_rate(transaction['operationAmount']['amount'])
+    return amount
+
+print(information_about_amount_of_transaction())
